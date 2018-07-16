@@ -1,0 +1,2 @@
+# txseries-docker-container
+TXSeries for Multiplatforms (TXSeries) is a mixed-language application server for COBOL and C applications. TXSeries offers a reliable, scalable, and highly available platform to develop, deploy, and host, mission-critical applications. TXSeries V9.2 open beta delivers capabilities that enable deployment of applications on Container-as-a-service platforms using Docker technology for Cloud environments. 
