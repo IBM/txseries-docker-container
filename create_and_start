@@ -1,0 +1,211 @@
+#!/bin/bash
+#####################################################################################
+#                                                                                   #
+#  Script to start the region and wait.                                             #
+#                                                                                   #
+#  Usage : start_server                                                             #
+#                                                                                   #
+#####################################################################################
+
+REGION_NAME=${REGION_NAME:-"TXREGION"}
+SFS_NAME=${SFS_NAME:-"TXSFS"}
+REGION_START_TYPE=${REGION_START_TYPE:-"auto"}
+SFS_START_TYPE=${SFS_START_TYPE:-"auto"}
+TXADMIN_USER=${TXADMIN_USER:-"txadmin"}
+TXADMIN_PASSWORD=${TXADMIN_PASSWORD:-"txadmin"}
+WORK_DIR=${WORK_DIR:-"/work"}
+TELD_PORT=${TELD_PORT:-"3270"}
+
+if [[ ! -z "${ENTRY_DEBUG}" ]]; then
+    set -x
+fi
+
+create_user()
+{
+  echo "Create txadmin user"
+  useradd -d "/home/txadmin" -s "/bin/ksh" -c "TXSeries Admin" -m -g "cics" txadmin
+  echo -e "$TXADMIN_PASSWORD\n$TXADMIN_PASSWORD" | passwd txadmin
+}
+
+persistence_enabler()
+{
+  CICS_DB=/var/cics_regions/regions.db
+  SFS_DB=/var/cics_servers/servers.db
+ 
+  for file in `find /var/cics_regions/`; do touch $file; done
+  for file in `find /var/cics_servers/`; do touch $file; done
+
+  if [ ! -e ${CICS_DB} ]; then
+     touch $CICS_DB
+     chown -R cics:cics /var/cics_regions/
+     chmod -R g+w /var/cics_regions/
+  fi 
+  if [ ! -e ${SFS_DB} ]; then
+     touch $SFS_DB
+     mkdir -p /var/cics_servers/cicsipc/
+     mkdir -p /var/cics_servers/cicsipc
+     mkdir -p /var/cics_servers/WS
+     mkdir -p /var/cics_servers/archives
+     mkdir -p /var/cics_servers/volumes
+     mkdir -p /var/cics_servers/volumes
+     mkdir -p /var/cics_servers/SSD/cics/sfs
+     cp /opt/ibm/cics/etc/SSD.default /var/cics_servers/SSD/SSD.stanza
+     cp /opt/ibm/cics/etc/SSD.default /var/cics_servers/SSD/AUTO.stanza
+
+     chown -R cics:cics /var/cics_servers/
+     chmod -R g+w /var/cics_servers
+  fi
+}
+
+configure_program_autoinstall()
+{
+  cd /opt/ibm/cics/samples/userexit/ && make && cp cicsuxit /opt/ibm/cics/bin
+  su -m - $TXADMIN_USER -c "cicsadd -c pd -r $REGION_NAME UXIT PathName="cicsuxit" UserExitNumber=13 RSLKey=public"
+}
+
+setup_region()
+{
+    if [ -e "/var/cics_servers/cicsipc/gs_lock" ]; then
+      rm -f /var/cics_servers/cicsipc/*
+    fi
+    /opt/ibm/cics/bin/cicsepm start
+    /opt/ibm/cics/etc/rc.cics
+    /opt/ibm/cics/wui/bin/server status txserver
+    if [ $? -eq 1 ]
+    then
+        echo ""
+        echo "Current status of Liberty is: INACTIVE"
+        echo "Liberty may sometimes take a while to startup."
+    fi
+}
+
+setup_lang()
+{
+    case $LANG in
+      de_DE)
+         locale-gen de_DE
+         ;;
+      es_ES)
+         locale-gen es_ES
+         ;;
+      fr_FR)
+         locale-gen fr_FR
+         ;;
+      it_IT)
+         locale-gen it_IT
+         ;;
+      pt_BR)
+         locale-gen pt_BR
+         ;;
+      ko_KR)
+         locale-gen ko_KR
+         ;;
+      ja_JP.eucjp)
+         locale-gen ja_JP.EUC-JP
+         ;;
+      zh_CN)
+         locale-gen zh_CN
+         ;;
+      zh_TW)
+         locale-gen zh_TW
+         ;;
+      en_US | *)
+         locale-gen en_US
+         ;;
+    esac
+}
+
+start_server()
+{
+  if ! [ -e "/var/cics_regions/$REGION_NAME" ]; then   
+      echo "Creating and Setting up TXSeries Region ..."
+      su -m - $TXADMIN_USER -c "cicscp -v create sfs_server /.:/cics/sfs/$SFS_NAME ShortName=$SFS_NAME"
+      su -m - $TXADMIN_USER -c "cicscp -v create region $REGION_NAME DefaultFileServer=/.:/cics/sfs/$SFS_NAME"
+ 
+      #Configure default IPIC listener  
+      su -m - $TXADMIN_USER -c "cicsadd -c ld -r $REGION_NAME LD01 Protocol=IPIC"
+      su -m - $TXADMIN_USER -c "cicsupdate -P -r $REGION_NAME -c td CPMI Permanent=no RSLKey=public RSLCheck=none"
+      su -m - $TXADMIN_USER -c "cicsupdate -P -r $REGION_NAME -c td CPMI Permanent=yes"
+ 
+      #Configure program auto installation
+      configure_program_autoinstall
+
+      # If /work/setup.sh is found then pre-configure the Region/SFS server 
+      if [ -e "/work/setup.sh" ]; then
+       cd /work
+       su -m - $TXADMIN_USER -c "./setup.sh $REGION_NAME $SFS_NAME"
+       cd -
+      fi
+  fi
+ 
+  echo "Starting TXSeries Region ..."
+  su -m - $TXADMIN_USER -c "cicscp -v start sfs_server $SFS_NAME StartType=$SFS_START_TYPE"
+
+  if [ -z "`grep 'ResourceDescription="IVP File"' /var/cics_regions/$REGION_NAME/database/FD/FD.stanza`" ]; then
+    # Confgiure TXSeries IVP
+    su -m - $TXADMIN_USER -c "cicsivp -r $REGION_NAME -s /.:/cics/sfs/$SFS_NAME -v sfs_$SFS_NAME || true"
+  fi
+  su -m - $TXADMIN_USER -c "cicscp -v start region $REGION_NAME StartType=$REGION_START_TYPE"
+
+  if [ -e "/var/cics_clients/cicsteld.TELNX1" ]; then
+      rm -f /var/cics_clients/cicsteld.TELNX1
+  fi
+  # Create the telnet server
+  cicscp -v create telnet_server TELNX1 -P $TELD_PORT -r $REGION_NAME
+}
+
+stop_server()
+{
+  echo "Stopping TXSeries processes ..................."
+  # Forcefully stop all active TXSeries regions
+  cicslssrc|grep active|grep -v sfs|cut -d "." -f2|cut -d " " -f1|while read a b; do cicscp -v stop region $a -f ; done
+  # Stop all TXSeries regions/SFS Server
+  cicscp -v stop all
+  # Stop TXSeries Administration Console Server
+  /opt/ibm/cics/wui/bin/server stop txserver
+  # Stop sarpcd process
+  cicsepm stop
+  # Forcefully kill every cics processes
+  ps -aef | grep cics | awk '{print $2}' | xargs kill -9
+}
+
+case "${LICENSE,,}" in
+  "accept" ) 
+    setup_lang
+    create_user
+    persistence_enabler
+    /opt/ibm/cics/bin/maketxl || true
+
+    # Start xinetd server
+    /etc/init.d/xinetd start 
+
+    setup_region
+
+    case "${PROFILED,,}" in
+      "false" )
+          echo "TXSeries for Multiplatform 9.2 Beta image is provisioned"
+          if [ -e "/work/entryscript.sh" ]; then
+             su -m - $TXADMIN_USER -c "/work/entryscript.sh"
+          fi
+          ;;
+      * | "true") 
+          start_server || exit $?
+          cicstail -r $REGION_NAME &
+          ;;          
+    esac
+    ;;
+  "view" ) # Display license file
+    /opt/ibm/cics/etc/view_license.sh
+    exit 1
+    ;;
+  *) # License not accepted
+    echo -e "Set environment variable LICENSE=accept to indicate acceptance of license terms and conditions.\n\nLicense agreements and information can be viewed by running this image with the environment variable LICENSE=view.  You can also set the LANG environment variable to view the license in a different language."
+    exit 1
+    ;;
+esac
+
+trap "stop_server" TERM INT
+PID=$(ps -C sarpcd -o pid= | tr -d " ")
+while [[ -e "/proc/$PID" ]]; do
+  sleep 1
+done
