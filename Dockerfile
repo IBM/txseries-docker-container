@@ -19,7 +19,7 @@ RUN dpkg --add-architecture i386
 RUN apt-get update --fix-missing && apt-get install -y net-tools libc6:i386 libncurses5:i386 libstdc++6:i386 ksh gawk procps gcc-multilib libncurses5-dev:i386 libpam0g:i386 libpam-modules:i386 locales xinetd gdb make wget --fix-missing
 
 #  Get the TXSeries beta image and install TXSeries
-RUN set -x && TXSERIES_BETA_URL=https://public.dhe.ibm.com/ibmdl/export/pub/software/htp/zos/txseries/TXSeriesV92_Open_Beta_Linux.tar.gz \
+RUN set -x && TXSERIES_BETA_URL=http://public.dhe.ibm.com/ibmdl/export/pub/software/htp/txseries/TXSeriesV92_Open_Beta_Linux.tar.gz \
     && echo $TXSERIES_BETA_URL \
     && wget -q $TXSERIES_BETA_URL -O /tmp/TXSeriesV92_Open_Beta_Linux.tar.gz \
     && tar -xf /tmp/TXSeriesV92_Open_Beta_Linux.tar.gz -C / \
