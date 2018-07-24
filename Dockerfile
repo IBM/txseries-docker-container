@@ -40,6 +40,6 @@ EXPOSE 1435
 # TXSeries Admin Console Port
 EXPOSE 9443
 
-ADD ./txseries/create_and_start /work/
+ADD ./create_and_start /work/
 
 ENTRYPOINT ["/work/create_and_start"]
