@@ -85,8 +85,8 @@ You can customize your profile and create TXSeries docker image in the profiled 
 Following example shows how to create a profile with custom names for TXSeries region and SFS server.
 ```sh
 docker run -p 3271:3270 -p 1436:1435 -p 9444:9443 \
--it -e LICENSE=accept -e REGION_NAME=MYREGION -e \
-SFS_NAME=MYSFS ibmcom/txseries
+           -it -e LICENSE=accept -e REGION_NAME=MYREGION \
+           -e SFS_NAME=MYSFS ibmcom/txseries
 ```
 
 **Customization with additional configuration for TXSeries region and SFS**
@@ -133,7 +133,7 @@ You can do this in the following ways:
 
 ```sh
 docker run --env LICENSE=accept --env PROFILED=false \
---publish 9443:9443 --detach ibmcom/txseries
+           --publish 9443:9443 --detach ibmcom/txseries
 ```
 The above command starts the container without creating any TXSeries region or SFS server. To create  and configure SFS and TXSeries regions, use TXSeries administration console from a web browser by using following URL
 
@@ -168,13 +168,15 @@ You might want to persist the transaction logs to preserve them through server r
 
 * To persist region data and sfs data, a volume should be attached to the container. Attach the volumes to /var/cics_regions, /var/cics_servers and /var/cics_clients as below:
 
-`docker run --name mycontainer -it \
-                   -v region:/var/cics_regions \
+```sh
+docker run --name mycontainer -it \
+                   -v region:/var/cics_regions \                                   
                    -v sfs:/var/cics_servers \
                    -v client:/var/cics_clients \
                    -p 3270:3270 -p 1435:1435 \
                    -p 9443:9443  -e LICENSE=accept \
-                   ibmcom/txseries`
+                   ibmcom/txseries
+```
 
 * If container is started with profiled option and the container is restarted, then TXSeries region and SFS server will be auto started.
 
