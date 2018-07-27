@@ -22,7 +22,7 @@ x86
 [ibm-txseries-charts](https://github.com/IBM/ibm-txseries-charts)
 
 ## System requirements for TXSeries V9.2 Beta Docker Container
-[GitHub docs]()
+[GitHub docs](https://github.com/IBM/txseries-docker-container/blob/master/DOCS/92_Beta_SysReq.md)
 
 # TXSeries for Multiplatforms - Overview
 TXSeries for Multiplatforms (TXSeries) is a mixed-language application server for COBOL and C applications. TXSeries offers a reliable, scalable, and highly available platform to develop, deploy, and host, mission-critical applications. Refer to [MarketPlace](https://www.ibm.com/in-en/marketplace/txseries-for-multiplatforms) for more information.
@@ -158,11 +158,7 @@ You might want to persist the transaction logs to preserve them through server r
 
 `docker run --name mycontainer -it -v region:/var/cics_regions -v sfs:/var/cics_servers -v client:/var/cics_clients -p 3270:3270 -p 1435:1435 -p 9443:9443  -e LICENSE=accept ibmcom/txseries`
 
-* If the container is restarted, then the entry script will do warm start of TXSeries region and SFS server with the persisted data.
-
-`docker stop IVT` 
-
-`docker start IVT`
+* If container is started with profiled option and the container is restarted, then TXSeries region and SFS server will be auto started.
 
 # Note
 When you create your own images from ibmcom/txseries, ensure not to use ENTRYPOINT command in Dockerfile.
