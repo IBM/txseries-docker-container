@@ -109,6 +109,7 @@ The below Dockerfile snippet shows an example of copying script to /work directo
 From ibmcom/txseries
 COPY CONFIGURE.sh /work/setup.sh
 RUN chmod +x /work/setup.sh
+
 ```
 
 **Working with compiled CICS applications**
@@ -122,6 +123,7 @@ From ibmcom/txseries
 COPY CONFIGURE.sh /work/setup.sh
 RUN chmod +x /work/setup.sh
 COPY <Compiled Applications> /work/autoinstall-dropin/
+
 ```
 
 **Setup without profile**
