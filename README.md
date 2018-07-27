@@ -3,25 +3,25 @@
 
 # Quick reference
 
-* **Where to get help**\
+* **Where to get help**
 [DeveloperWorks forum](https://www.ibm.com/developerworks/community/forums/html/forum?id=11111111-0000-0000-0000-000000001014)
 
-* **Where to find TXSeries product related information**\
+* **Where to find TXSeries product related information**
 [Product Knowledge Center](https://www.ibm.com/support/knowledgecenter/en/SSAL2T_9.1.0/com.ibm.cics.tx.doc/ic-homepage.html)
 
-*  **Where to file issues**\
+*  **Where to file issues**
 [GitHub Issue tracker](https://github.com/IBM/txseries-docker-container/issues)
 
-*  **Maintained by**\
+*  **Maintained by**
 IBM
 
-*  **Supported architectures**\
+*  **Supported architectures**
 x86
 
-*  **Helm Charts for Kubernetes based orchestration**\
+*  **Helm Charts for Kubernetes based orchestration**
 [ibm-txseries-charts](https://github.com/IBM/ibm-txseries-charts)
 
-*  **System requirements for TXSeries V9.2 Beta Docker Container**\
+*  **System requirements for TXSeries V9.2 Beta Docker Container**
 [GitHub docs](https://github.com/IBM/txseries-docker-container/blob/master/DOCS/92_Beta_SysReq.md)
 
 # TXSeries for Multiplatforms - Overview
@@ -170,7 +170,7 @@ You might want to persist the transaction logs to preserve them through server r
 
 ```sh
 docker run --name mycontainer -it \
-                   -v region:/var/cics_regions \                                   
+                   -v region:/var/cics_regions \
                    -v sfs:/var/cics_servers \
                    -v client:/var/cics_clients \
                    -p 3270:3270 -p 1435:1435 \
