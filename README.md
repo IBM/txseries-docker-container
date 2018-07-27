@@ -3,25 +3,25 @@
 
 # Quick reference
 
-## Where to get help
+**Where to get help**
 [DeveloperWorks forum](https://www.ibm.com/developerworks/community/forums/html/forum?id=11111111-0000-0000-0000-000000001014)
 
-##  Where to find TXSeries product related information
+**Where to find TXSeries product related information**
 [Product Knowledge Center](https://www.ibm.com/support/knowledgecenter/en/SSAL2T_9.1.0/com.ibm.cics.tx.doc/ic-homepage.html)
 
-##  Where to file issues
+**Where to file issues**
 [GitHub Issue tracker](https://github.com/IBM/txseries-docker-container/issues)
 
-##  Maintained by
+**Maintained by**
 IBM
 
-##  Supported architectures
+**Supported architectures**
 x86
 
-## Helm Charts for Kubernetes based orchestration
+**Helm Charts for Kubernetes based orchestration**
 [ibm-txseries-charts](https://github.com/IBM/ibm-txseries-charts)
 
-## System requirements for TXSeries V9.2 Beta Docker Container
+**System requirements for TXSeries V9.2 Beta Docker Container**
 [GitHub docs](https://github.com/IBM/txseries-docker-container/blob/master/DOCS/92_Beta_SysReq.md)
 
 # TXSeries for Multiplatforms - Overview
@@ -40,17 +40,21 @@ You can specify whether pre-configured region setup is required or not using env
 
 For any of the profiled or non-profiled setup, you can verify successful installation of TXSeries using Installation Verification Program (IVP). See the section **Running the Installation Verification Program (IVP)** for more details.
 
-## Default profile
+**Default profile**
 
 You can run the TXSeries docker container with default profile. Following snippet shows usage of the command for default profile configuration. 
 
 ```sh
-docker run -p CICSTELD_TARGET_PORT:3270 -p IPIC_LISTENER_TARGET_PORT:1435 -p TXSERIES_ADMIN_CONSOLE_TARGET_PORT:9443 -it -e LICENSE=accept ibmcom/txseries
+docker run -p CICSTELD_TARGET_PORT:3270 \
+           -p IPIC_LISTENER_TARGET_PORT:1435 \
+           -p TXSERIES_ADMIN_CONSOLE_TARGET_PORT:9443 \
+           -it -e LICENSE=accept ibmcom/txseries
 ```
 
 For example,
 ```sh
-docker run -p 3271:3270 -p 1436:1435 -p 9444:9443 -it -e LICENSE=accept ibmcom/txseries
+docker run -p 3271:3270 -p 1436:1435 -p 9444:9443 \
+           -it -e LICENSE=accept ibmcom/txseries
 ```
 
 With the above command, the container will start the default TXSeries region *TXREGION* and SFS Server *TXSFS*. The docker image will have the following features provisioned:
@@ -62,7 +66,7 @@ With the above command, the container will start the default TXSeries region *TX
   
 You can use TXSeries Administration Console to configure TXSeries region/SFS using user id *txadmin* and password *txadmin*. 
 
-## Customizing the profile
+**Customizing the profile**
 You can customize your profile and create TXSeries docker image in the profiled setup. Following table lists the environment variables that can be used for customization.
 
 | Environment variable | Description |
@@ -77,18 +81,21 @@ You can customize your profile and create TXSeries docker image in the profiled 
 
 Following example shows how to create a profile with custom names for TXSeries region and SFS server.
 ```sh
-docker run -p 3271:3270 -p 1436:1435 -p 9444:9443 -it -e LICENSE=accept -e REGION_NAME=MYREGION -e SFS_NAME=MYSFS ibmcom/txseries
+docker run -p 3271:3270 -p 1436:1435 -p 9444:9443 \
+-it -e LICENSE=accept -e REGION_NAME=MYREGION -e \
+SFS_NAME=MYSFS ibmcom/txseries
 ```
 
-## Customization with additional configuration for TXSeries region and SFS
+**Customization with additional configuration for TXSeries region and SFS**
 
 You can run the TXSeries docker image with profiled setup and with specific region/SFS server settings. If you want to customize default profiled region/sfs server to have additional configuration, you can do so through a shell script, say *CONFIGURE.sh*. This script will need to accept TXSeries region name and SFS server name as command line arguments in that order and you can write the custom commands inside this script using the command line arguments. Following is an example snippet of *CONFIGURE.sh*.
 
 ```sh
 #To install fileset.sdt in SFS server from command line argument $2
-cicssdt -s /.:/cics/sfs/$2 -i fileset.sdt
+ cicssdt -s /.:/cics/sfs/$2 -i fileset.sdt
 #To add an File Definition (FD) entry FILEA in region with the name $1
-cicsadd -r $1 -c fd FILEA BaseName="testfile" IndexName="testidx"
+ cicsadd -r $1 -c fd FILEA BaseName="testfile" IndexName="testidx"
+ 
 ```
 
 Once this script is ready, copy it to docker image /work directory. 
@@ -97,25 +104,23 @@ The below Dockerfile snippet shows an example of copying script to /work directo
 
 ```sh
 From ibmcom/txseries
-
 COPY CONFIGURE.sh /work/setup.sh
 RUN chmod +x /work/setup.sh
 ```
 
-## Working with compiled CICS applications
+**Working with compiled CICS applications**
 You can run the TXSeries docker image with profiled setup and with pre-existing compiled CICS applications. You can drop the compiled CICS applications inside drop-in folder, that is /work/autoinstall-dropin/ and the profiled TXSeries region will execute them through program auto installation feature. 
 
 The below Dockerfile snippet shows an example of copying compiled TXSeries applications and setup.sh to drop-ins directory
 
 ```sh
 From ibmcom/txseries
-
 COPY CONFIGURE.sh /work/setup.sh
 RUN chmod +x /work/setup.sh
 COPY <Compiled Applications> /work/autoinstall-dropin/
 ```
 
-## Setup without profile
+**Setup without profile**
 
 You can run the TXSeries docker image without profile. You can run your own region and SFS Server inside docker container by setting the environment variable PROFILED=false while running the container. 
 
@@ -123,7 +128,8 @@ You can do this in the following ways:
 1. Run the docker run command as below:
 
 ```sh
-docker run --env LICENSE=accept --env PROFILED=false --publish 9443:9443 --detach ibmcom/txseries
+docker run --env LICENSE=accept --env PROFILED=false \
+--publish 9443:9443 --detach ibmcom/txseries
 ```
 The above command starts the container without creating any TXSeries region or SFS server. To create  and configure SFS and TXSeries regions, use TXSeries administration console from a web browser by using following URL
 
@@ -136,7 +142,7 @@ docker exec --tty --interactive ${CONTAINER_ID} bash
 ```
 Using this technique, you can have full control over all aspects of the TXSeries installation and you can use CICS commands to create and configure TXSeries regions and SFS servers.
 
-## Running the Installation Verification Program
+**Running the Installation Verification Program**
 You can connect to TXSeries region using a 3270 terminal to run the Installation verification program (IVP). This IVP is an employee management application, using which employee details can be added, modified, browsed or deleted. This application uses SFS as file server for storing employee data in VSAM files. 
 
 From 3270 terminal you can connect to *Host IP Address*:*CICSTELD_TARGET_PORT* and execute *MENU* transaction. Following steps provide more details on using the IVP.
@@ -151,12 +157,18 @@ From 3270 terminal you can connect to *Host IP Address*:*CICSTELD_TARGET_PORT* a
 
 With successful execution of the above IVP sample, you can confirm that the TXSeries docker image is correctly installed and configured.
 
-# Providing persistence
+# Providing Persistence
 You might want to persist the transaction logs to preserve them through server restarts. This is useful in server failure and restart scenarios. To achieve persistence, you must attach the volume to the containers. Follow the below steps:
 
 * To persist region data and sfs data, a volume should be attached to the container. Attach the volumes to /var/cics_regions, /var/cics_servers and /var/cics_clients as below:
 
-`docker run --name mycontainer -it -v region:/var/cics_regions -v sfs:/var/cics_servers -v client:/var/cics_clients -p 3270:3270 -p 1435:1435 -p 9443:9443  -e LICENSE=accept ibmcom/txseries`
+`docker run --name mycontainer -it \
+                   -v region:/var/cics_regions \
+                   -v sfs:/var/cics_servers \
+                   -v client:/var/cics_clients \
+                   -p 3270:3270 -p 1435:1435 \
+                   -p 9443:9443  -e LICENSE=accept \
+                   ibmcom/txseries`
 
 * If container is started with profiled option and the container is restarted, then TXSeries region and SFS server will be auto started.
 
