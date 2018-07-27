@@ -68,7 +68,7 @@ With the above command, the container will start the default TXSeries region *TX
   
 You can use TXSeries Administration Console to configure TXSeries region/SFS using user id *txadmin* and password *txadmin*. 
 
-**Customizing the profile**\
+**Customizing the profile**
 
 You can customize your profile and create TXSeries docker image in the profiled setup. Following table lists the environment variables that can be used for customization.
 
