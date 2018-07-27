@@ -4,7 +4,7 @@
 # Quick reference
 
 * **Where to get help**
-[DeveloperWorks forum](https://www.ibm.com/developerworks/community/forums/html/forum?id=11111111-0000-0000-0000-000000001014)
+[DeveloperWorks forum](https://www.ibm.com/developerworks/community/forums/html/topic?id=f7f69edc-c115-4cc4-9d59-ee3a7e1689dd&ps=25)
 
 * **Where to find TXSeries product related information**
 [Product Knowledge Center](https://www.ibm.com/support/knowledgecenter/en/SSAL2T_9.1.0/com.ibm.cics.tx.doc/ic-homepage.html)
