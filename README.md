@@ -3,33 +3,35 @@
 
 # Quick reference
 
-**Where to get help**
+* **Where to get help**\
 [DeveloperWorks forum](https://www.ibm.com/developerworks/community/forums/html/forum?id=11111111-0000-0000-0000-000000001014)
 
-**Where to find TXSeries product related information**
+* **Where to find TXSeries product related information**\
 [Product Knowledge Center](https://www.ibm.com/support/knowledgecenter/en/SSAL2T_9.1.0/com.ibm.cics.tx.doc/ic-homepage.html)
 
-**Where to file issues**
+*  **Where to file issues**\
 [GitHub Issue tracker](https://github.com/IBM/txseries-docker-container/issues)
 
-**Maintained by**
+*  **Maintained by**\
 IBM
 
-**Supported architectures**
+*  **Supported architectures**\
 x86
 
-**Helm Charts for Kubernetes based orchestration**
+*  **Helm Charts for Kubernetes based orchestration**\
 [ibm-txseries-charts](https://github.com/IBM/ibm-txseries-charts)
 
-**System requirements for TXSeries V9.2 Beta Docker Container**
+*  **System requirements for TXSeries V9.2 Beta Docker Container**\
 [GitHub docs](https://github.com/IBM/txseries-docker-container/blob/master/DOCS/92_Beta_SysReq.md)
 
 # TXSeries for Multiplatforms - Overview
+
 TXSeries for Multiplatforms (TXSeries) is a mixed-language application server for COBOL and C applications. TXSeries offers a reliable, scalable, and highly available platform to develop, deploy, and host, mission-critical applications. Refer to [MarketPlace](https://www.ibm.com/in-en/marketplace/txseries-for-multiplatforms) for more information.
 
 TXSeries V9.2 open beta delivers capabilities that enable deployment of applications on Container-as-a-service platforms using Docker technology for Cloud environments. 
 
 # Images
+
 This image contains TXSeries V9.2 Beta Docker image under the tag `latest`. See the section **Usage** for more details.
 
 # Usage
@@ -66,7 +68,8 @@ With the above command, the container will start the default TXSeries region *TX
   
 You can use TXSeries Administration Console to configure TXSeries region/SFS using user id *txadmin* and password *txadmin*. 
 
-**Customizing the profile**
+**Customizing the profile**\
+
 You can customize your profile and create TXSeries docker image in the profiled setup. Following table lists the environment variables that can be used for customization.
 
 | Environment variable | Description |
@@ -109,6 +112,7 @@ RUN chmod +x /work/setup.sh
 ```
 
 **Working with compiled CICS applications**
+
 You can run the TXSeries docker image with profiled setup and with pre-existing compiled CICS applications. You can drop the compiled CICS applications inside drop-in folder, that is /work/autoinstall-dropin/ and the profiled TXSeries region will execute them through program auto installation feature. 
 
 The below Dockerfile snippet shows an example of copying compiled TXSeries applications and setup.sh to drop-ins directory
@@ -143,6 +147,7 @@ docker exec --tty --interactive ${CONTAINER_ID} bash
 Using this technique, you can have full control over all aspects of the TXSeries installation and you can use CICS commands to create and configure TXSeries regions and SFS servers.
 
 **Running the Installation Verification Program**
+
 You can connect to TXSeries region using a 3270 terminal to run the Installation verification program (IVP). This IVP is an employee management application, using which employee details can be added, modified, browsed or deleted. This application uses SFS as file server for storing employee data in VSAM files. 
 
 From 3270 terminal you can connect to *Host IP Address*:*CICSTELD_TARGET_PORT* and execute *MENU* transaction. Following steps provide more details on using the IVP.
@@ -158,6 +163,7 @@ From 3270 terminal you can connect to *Host IP Address*:*CICSTELD_TARGET_PORT* a
 With successful execution of the above IVP sample, you can confirm that the TXSeries docker image is correctly installed and configured.
 
 # Providing Persistence
+
 You might want to persist the transaction logs to preserve them through server restarts. This is useful in server failure and restart scenarios. To achieve persistence, you must attach the volume to the containers. Follow the below steps:
 
 * To persist region data and sfs data, a volume should be attached to the container. Attach the volumes to /var/cics_regions, /var/cics_servers and /var/cics_clients as below:
@@ -173,9 +179,11 @@ You might want to persist the transaction logs to preserve them through server r
 * If container is started with profiled option and the container is restarted, then TXSeries region and SFS server will be auto started.
 
 # Note
+
 When you create your own images from ibmcom/txseries, ensure not to use ENTRYPOINT command in Dockerfile.
 
 # License
+
 * Dockerfile and associated scripts in this project are licensed under [Apache License 2.0](https://github.com/IBM/txseries-docker-container/blob/master/LICENSE).
 
 * View TXSeries V9.2 Open Beta license [here](http://www14.software.ibm.com/cgi-bin/weblap/lap.pl?li_formnum=L-ACRR-AZ2DGU). Accept the license using "-e LICENSE=accept" when you run the "docker run" command. Following is an example:
