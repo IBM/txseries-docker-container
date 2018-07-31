@@ -132,35 +132,35 @@ COPY <Compiled Applications> /work/autoinstall-dropin/
 You can run the TXSeries docker image without profile. You can run your own region and SFS Server inside docker container by setting the environment variable PROFILED=false while running the container. 
 
 You can do this in the following ways:
-1. Run the docker run command as below:
+* Run the docker run command as below:
 
-```sh
-docker run --env LICENSE=accept --env PROFILED=false \
+   ```sh
+   docker run --env LICENSE=accept --env PROFILED=false \
            --publish 9443:9443 --detach ibmcom/txseries
            
-```
-The above command starts the container without creating any TXSeries region or SFS server. To create  and configure SFS and TXSeries regions, use TXSeries administration console from a web browser by using following URL
+   ```
+   The above command starts the container without creating any TXSeries region or SFS server. To create  and configure SFS   and TXSeries regions, use TXSeries administration console from a web browser by using following URL
 https://HOST_IP_ADDRESS:9443/txseries/admin 
 
-2. Another option to run CICS commands to create SFS servers and CICS regions  is directly running the command from container process space. To run the commands you can use docker exec command , for example,
+* Another option to run CICS commands to create SFS servers and CICS regions  is directly running the command from container process space. To run the commands you can use docker exec command , for example,
 
-```sh
-docker exec --tty --interactive ${CONTAINER_ID} bash
-```
-Using this technique, you can have full control over all aspects of the TXSeries installation and you can use CICS commands to create and configure TXSeries regions and SFS servers.
+   ```sh
+   docker exec --tty --interactive ${CONTAINER_ID} bash
+   ```
+   Using this technique, you can have full control over all aspects of the TXSeries installation and you can use CICS commands to create and configure TXSeries regions and SFS servers.
 
-3. If you want to create, configure and start TXSeries regions and SFS servers while starting the docker container, then you can add the respective commands for TXSeries administration to a shell script file. Provide the execution permission to this script file before starting the docker container. For example, if you added the CICS commands to a script file named cics_command.sh under a directory /tmp , then you can start the txseries docker container by using the following docker run command. This would execute the commands specified in script file /tmp/cics_command.sh during TXSeries docker container startup.
+* If you want to create, configure and start TXSeries regions and SFS servers while starting the docker container, then you can add the respective commands for TXSeries administration to a shell script file. Provide the execution permission to this script file before starting the docker container. For example, if you added the CICS commands to a script file named cics_command.sh under a directory /tmp , then you can start the txseries docker container by using the following docker run command. This would execute the commands specified in script file /tmp/cics_command.sh during TXSeries docker container startup.
 
-```sh
-docker run \
+    ```sh
+    docker run \
         --env LICENSE=accept \
         --env PROFILED=false \
         --publish 9443:9443 \
          -v /tmp/cics_command.sh:/work/entryscript.sh \
         --detach \
          ibmcom/txseries
-```
-
+         
+     ```
 
 **Running the Installation Verification Program**
 
