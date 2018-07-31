@@ -55,7 +55,7 @@ docker run -p CICSTELD_TARGET_PORT:3270 \
 
 For example,
 ```sh
-docker run -p 3271:3270 -p 1436:1435 -p 9444:9443 \
+docker run -p 3271:3270 -p 1436:1435 -p 9443:9443 \
            -it -e LICENSE=accept ibmcom/txseries
 ```
 
@@ -64,7 +64,7 @@ With the above command, the container will start the default TXSeries region *TX
 *	cicsteld port listening on 3271
 *	TXSeries CICS application program auto installation configured
 *	Configured TXSeries Installation Verification Programs ( IVP )
-*	TXSeries Administration Console listening on 9444 ( HTTPS ); https://*Host_IP_Address*:9444/txseries/admin
+*	TXSeries Administration Console listening on 9443 ( HTTPS ); https://*Host_IP_Address*:9443/txseries/admin
   
 You can use TXSeries Administration Console to configure TXSeries region/SFS using user id *txadmin* and password *txadmin*. 
 
@@ -80,13 +80,14 @@ You can customize your profile and create TXSeries docker image in the profiled 
 | SFS_START_TYPE | The start types of SFS server: cold or auto; by default, auto |
 | TXADMIN_PASSWORD | Password of txadmin user; by default, txadmin |
 | TELD_PORT | Teld port; by default, 3270 |
-| LANG | Locale setting for the region, by default en_US |
+| LANG | Locale setting for the region, by default en_US. Supported TXSeries [locales](https://www.ibm.com/support/knowledgecenter/en/SSAL2T_9.1.0/com.ibm.cics.tx.doc/tasks/t_in_tx_plan_lin.html) |
 
 Following example shows how to create a profile with custom names for TXSeries region and SFS server.
 ```sh
-docker run -p 3271:3270 -p 1436:1435 -p 9444:9443 \
+docker run -p 3271:3270 -p 1436:1435 -p 9443:9443 \
            -it -e LICENSE=accept -e REGION_NAME=MYREGION \
            -e SFS_NAME=MYSFS ibmcom/txseries
+           
 ```
 
 **Customization with additional configuration for TXSeries region and SFS**
@@ -136,9 +137,9 @@ You can do this in the following ways:
 ```sh
 docker run --env LICENSE=accept --env PROFILED=false \
            --publish 9443:9443 --detach ibmcom/txseries
+           
 ```
 The above command starts the container without creating any TXSeries region or SFS server. To create  and configure SFS and TXSeries regions, use TXSeries administration console from a web browser by using following URL
-
 https://HOST_IP_ADDRESS:9443/txseries/admin 
 
 2. Another option to run CICS commands to create SFS servers and CICS regions  is directly running the command from container process space. To run the commands you can use docker exec command , for example,
@@ -147,6 +148,19 @@ https://HOST_IP_ADDRESS:9443/txseries/admin
 docker exec --tty --interactive ${CONTAINER_ID} bash
 ```
 Using this technique, you can have full control over all aspects of the TXSeries installation and you can use CICS commands to create and configure TXSeries regions and SFS servers.
+
+3. If you want to create, configure and start TXSeries regions and SFS servers while starting the docker container, then you can add the respective commands for TXSeries administration to a shell script file. Provide the execution permission to this script file before starting the docker container. For example, if you added the CICS commands to a script file named cics_command.sh under a directory /tmp , then you can start the txseries docker container by using the following docker run command. This would execute the commands specified in script file /tmp/cics_command.sh during TXSeries docker container startup.
+
+```sh
+docker run \
+        --env LICENSE=accept \
+        --env PROFILED=false \
+        --publish 9443:9443 \
+         -v /tmp/cics_command.sh:/work/entryscript.sh \
+        --detach \
+         ibmcom/txseries
+```
+
 
 **Running the Installation Verification Program**
 
@@ -192,4 +206,4 @@ When you create your own images from ibmcom/txseries, ensure not to use ENTRYPOI
 
 * View TXSeries V9.2 Open Beta license [here](http://www14.software.ibm.com/cgi-bin/weblap/lap.pl?li_formnum=L-ACRR-AZ2DGU). Accept the license using "-e LICENSE=accept" when you run the "docker run" command. Following is an example:
 
-`docker run -p 3270:3270 -p 1435:1435 -p 9443:9443 -it -e LICENSE=accept txseries`
+`docker run -p 3270:3270 -p 1435:1435 -p 9443:9443 -it -e LICENSE=accept ibmcom/txseries`
