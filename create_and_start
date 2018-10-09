@@ -78,13 +78,40 @@ configure_program_autoinstall()
   su -m - $TXADMIN_USER -c "cicsadd -c pd -r $REGION_NAME UXIT PathName="cicsuxit" UserExitNumber=13 RSLKey=public"
 }
 
-setup_region()
+pre_setup_root_config()
+{
+      if [ -e "/work/pre_setup_root_config.sh" ]; then
+       /work/pre_setup_root_config.sh
+      fi
+}
+
+post_setup_root_config()
+{
+      if [ -e "/work/post_setup_root_config.sh" ]; then
+       /work/post_setup_root_config.sh
+      fi
+}
+
+setup_txseries()
 {
     if [ -e "/var/cics_servers/cicsipc/gs_lock" ]; then
       rm -f /var/cics_servers/cicsipc/*
     fi
-    /opt/ibm/cics/bin/cicsepm start
-    /opt/ibm/cics/etc/rc.cics
+    /opt/ibm/cics/bin/cicsepm start > /dev/null
+    count=0
+    while ! `pgrep -x "sarpcd" > /dev/null` 
+    do
+      sleep 1
+      /opt/ibm/cics/bin/cicsepm start > /dev/null
+      count=`expr $count + 1`
+      if [ $count == 5 ] 
+      then
+         echo "Falied to start SARPCD process"
+         exit 1
+      fi
+    done
+    echo "SARPCD process started"
+    /opt/ibm/cics/wui/bin/server start txserver
     /opt/ibm/cics/wui/bin/server status txserver
     if [ $? -eq 1 ]
     then
@@ -162,11 +189,17 @@ start_server()
   fi
   su -m - $TXADMIN_USER -c "cicscp -v start region $REGION_NAME StartType=$REGION_START_TYPE"
 
-  if [ -e "/var/cics_clients/cicsteld.TELNX1" ]; then
-      rm -f /var/cics_clients/cicsteld.TELNX1
+  grep TELNX1 /etc/xinetd.d/cicsteld &> /dev/null
+  if [ $? != 0 ]; then
+    if [ -e "/var/cics_clients/cicsteld.TELNX1" ]; then
+      mv -f /var/cics_clients/cicsteld.TELNX1 /var/cics_clients/cicsteld.TELNX1_BACKUP
+      cicscp -v create telnet_server TELNX1 -P $TELD_PORT -r $REGION_NAME
+      mv -f /var/cics_clients/cicsteld.TELNX1_BACKUP /var/cics_clients/cicsteld.TELNX1
+    else
+    cicscp -v create telnet_server TELNX1 -P $TELD_PORT -r $REGION_NAME
+    fi
   fi
-  # Create the telnet server
-  cicscp -v create telnet_server TELNX1 -P $TELD_PORT -r $REGION_NAME
+
 }
 
 stop_server()
@@ -194,18 +227,26 @@ case "${LICENSE,,}" in
     # Start xinetd server
     /etc/init.d/xinetd start 
 
-    setup_region
+    setup_txseries
 
     case "${PROFILED,,}" in
       "false" )
           echo "TXSeries for Multiplatform 9.2 Beta image is provisioned"
+          # To invoke root command script before TXSeries setup
+          pre_setup_root_config
           if [ -e "/work/entryscript.sh" ]; then
              su -m - $TXADMIN_USER -c "/work/entryscript.sh"
           fi
+          # To invoke root command script post TXSeries setup
+          post_setup_root_config
           ;;
       * | "true") 
+          # To invoke root command script before TXSeries setup
+          pre_setup_root_config
           start_server || exit $?
           cicstail -r $REGION_NAME &
+          # To invoke root command script post TXSeries setup
+          post_setup_root_config
           ;;          
     esac
     ;;
